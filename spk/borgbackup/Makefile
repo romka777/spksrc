@@ -1,10 +1,10 @@
 SPK_NAME = borgbackup
-SPK_VERS = 1.2.0
-SPK_REV = 10
+SPK_VERS = 1.2.1
+SPK_REV = 12
 SPK_ICON = src/$(SPK_NAME).png
 
 BUILD_DEPENDS = cross/python310
-DEPENDS = cross/attr cross/acl cross/openssl cross/lz4 cross/zstd cross/libb2
+DEPENDS = cross/attr cross/acl cross/openssl cross/lz4 cross/zstd cross/libb2 cross/fuse
 
 SPK_DEPENDS = "python310"
 
@@ -17,12 +17,15 @@ SPK_DEPENDS = "python310"
 # deactivate
 WHEELS = src/requirements-crossenv.txt src/requirements-pure.txt
 
+# Force building pure-python wheels (issue #5204)
+WHEELS_PURE_PYTHON_PACKAGING_ENABLE = 1
+
 MAINTAINER = SynoCommunity
 DESCRIPTION = Deduplicating backup program with compression and authenticated encryption.
 
 DISPLAY_NAME = Borg
 STARTABLE = no
-CHANGELOG = "1. Update to borgbackup 1.2.0<br/>2. Update borgmatic to v1.5.23<br/>3. Update OpenSSL to v1.1.1m<br/>4. Add BLAKE2-libb2 support<br/>5. Update to Python 3.10"
+CHANGELOG = "1. Add emborg 1.32.0<br/>2. Update borgmatic to v1.6.3<br/>3. Update borg to 1.2.1<br/>"
 
 HOMEPAGE = https://borgbackup.readthedocs.io
 LICENSE  = BSD-3-Clause
@@ -30,7 +33,7 @@ LICENSE  = BSD-3-Clause
 
 SERVICE_SETUP = src/service-setup.sh
 
-SPK_USR_LOCAL_LINKS = bin:env/bin/borg bin:env/bin/borgmatic
+SPK_USR_LOCAL_LINKS = bin:env/bin/borg bin:env/bin/borgmatic bin:env/bin/emborg
 
 ENV += BORG_OPENSSL_PREFIX="$(STAGING_INSTALL_PREFIX)"
 ENV += BORG_LIBLZ4_PREFIX="$(STAGING_INSTALL_PREFIX)"

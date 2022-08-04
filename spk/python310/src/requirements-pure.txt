@@ -1,6 +1,6 @@
 # basic default wheels
 #pip==22.0.4             ==> Always install latest version (service-setup.sh:install_python_virtualenv)
-setuptools==60.10.0
+setuptools==62.4.0
 wheel==0.37.1
 
 # Always use latest version available
@@ -26,6 +26,3 @@ six==1.16.0
 ## are provided to demonstrate how to build
 ## various wheels.  Uncoment to enable.
 ##
-
-# [deluge]
-# deluge==2.0.5

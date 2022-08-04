@@ -1,7 +1,7 @@
 SPK_NAME = python310
-SPK_VERS = 3.10.4
+SPK_VERS = 3.10.5
 SPK_VERS_MAJOR_MINOR = $(word 1,$(subst ., ,$(SPK_VERS))).$(word 2,$(subst ., ,$(SPK_VERS)))
-SPK_REV = 9
+SPK_REV = 10
 SPK_ICON = src/python3.png
 
 DEPENDS  = cross/$(SPK_NAME)
@@ -13,7 +13,7 @@ DESCRIPTION_FRE = Langage de programmation Python.
 DESCRIPTION_SPN = Lenguaje de programación Python.
 STARTABLE = no
 DISPLAY_NAME = Python 3.10
-CHANGELOG = "1. Update to python 3.10.4 <br/>2. Update to OpenSSL 1.1.1n"
+CHANGELOG = "1. Update to Python 3.10.5<br/>2. Update to OpenSSL 1.1.1o"
 
 HOMEPAGE = https://www.python.org
 LICENSE  = PSF
@@ -38,31 +38,54 @@ WHEELS_PURE_PYTHON_PACKAGING_ENABLE = 1
 ## various wheels.  Uncoment to enable.
 ##
 
-include ../../mk/spksrc.archs.mk
+include ../../mk/spksrc.common.mk
 
 # [gevent]
 # DEPENDS += cross/libev cross/c-ares
 # ENV += GEVENTSETUP_EMBED_CARES=FALSE
 # ENV += GEVENTSETUP_EMBED_LIBEV=FALSE
 
-# [libtorrent]
-# # cross/boost: archs lacking C++11 compiler (88f6281, hi3535 and ppc archs except QorIQ)
-# UNSUPPORTED_ARCHS += $(ARM5_ARCHS) $(ARMv7L_ARCHS) $(OLD_PPC_ARCHS)
-# # libtorrent > 2.x are DSM 7 only due to c++14 minimal requirement
-# REQUIRED_MIN_DSM = 7.0
-# # comcerto2k has older toolchain than other DSM 7 archs
-# UNSUPPORTED_ARCHS += comcerto2k
-# DEPENDS += cross/boost cross/geoip cross/libiconv
+# [libtorrent] 2.0.6
+# # archs lacking C++14 (and c++1y) compiler (88f6281, hi3535 and ppc archs except QorIQ)
+# UNSUPPORTED_ARCHS += $(ARMv5_ARCHS) $(ARMv7L_ARCHS) $(OLD_PPC_ARCHS)
+# DEPENDS += cross/openssl cross/boost_1.78 cross/geoip
 # BOOST_LIBRARIES += system python chrono random
+# BOOST_BUILD_PATH=$(WORK_DIR)/boost_1_78_0
 # ENV += BOOST_LIBRARIES="$(BOOST_LIBRARIES)"
-# ENV += BOOST_BUILD_PATH=$(WORK_DIR)/boost_1_78_0
-# ENV += PATH=$(WORK_DIR)/boost_1_78_0:$(PATH)
-# # Fails to build on evansport-7.0 but enabling
-# # -fPIC allows it to go much further
-# # https://github.com/arvidn/libtorrent/issues/6792
+# ENV += BOOST_BUILD_PATH="$(BOOST_BUILD_PATH)"
+# ENV += PATH=$(BOOST_BUILD_PATH):$(PATH)
 # WHEELS_BUILD_ARGS += [libtorrent]
 # WHEELS_BUILD_ARGS += build_ext
 # WHEELS_BUILD_ARGS += --b2-args=libtorrent-python-pic=on
+# ifeq ($(findstring $(ARCH),$(32bit_ARCHS)),$(ARCH))
+# WHEELS_BUILD_ARGS += --b2-args=address-model=32 --no-autoconf=address-model
+# endif
+# # libtorrent > 2.x are DSM 7 only due to c++14 minimal requirement
+# # Unless c++1y is fixed: https://github.com/arvidn/libtorrent/issues/6868
+# REQUIRED_MIN_DSM = 7.0
+# UNSUPPORTED_ARCHS += comcerto2k
+# # ifeq ($(call version_lt, $(call version_gcc), 5.0),1)
+# # WHEELS_BUILD_ARGS += --b2-args=cxxstd=1y
+# # endif
+
+# [libtorrent] 1.2.16
+# # archs lacking C++11 compiler (88f6281, hi3535 and ppc archs except QorIQ)
+# UNSUPPORTED_ARCHS += $(ARMv5_ARCHS) $(ARMv7L_ARCHS) $(OLD_PPC_ARCHS)
+# DEPENDS += cross/openssl cross/boost_1.70 cross/geoip cross/libiconv
+# BOOST_LIBRARIES += system python chrono random
+# BOOST_BUILD_PATH=$(WORK_DIR)/boost_1_70_0
+# ENV += BOOST_LIBRARIES="$(BOOST_LIBRARIES)"
+# ENV += BOOST_BUILD_PATH="$(BOOST_BUILD_PATH)"
+# ENV += PATH=$(BOOST_BUILD_PATH):$(PATH)
+# WHEELS_BUILD_ARGS += [libtorrent]
+# WHEELS_BUILD_ARGS += build_ext
+# WHEELS_BUILD_ARGS += --b2-args=libtorrent-python-pic=on
+# ifeq ($(findstring $(ARCH),$(32bit_ARCHS)),$(ARCH))
+# WHEELS_BUILD_ARGS += --b2-args=address-model=32 --no-autoconf=address-model
+# endif
+# ifeq ($(call version_lt, $(call version_gcc), 5.0),1)
+# WHEELS_BUILD_ARGS += --b2-args=cxxstd=11
+# endif
 
 # [lxml]
 # DEPENDS += cross/libxml2
@@ -118,6 +141,7 @@ include ../../mk/spksrc.spk.mk
 
 .PHONY: python310_extra_install
 python310_extra_install:
-	rm -f $(STAGING_DIR)/$(PYTHON_LIB_DIR)/config/libpython*.a
+	@$(MSG) - Remove test folder
 	rm -rf $(STAGING_DIR)/$(PYTHON_LIB_DIR)/test/
-	find $(STAGING_DIR)/$(PYTHON_LIB_DIR) -type f -regex '.*\.py[co]' | xargs rm -f
+	@$(MSG) - Remove compiled files from __pycache__
+	find $(STAGING_DIR)/$(PYTHON_LIB_DIR) -type f -regex '.*\.py[co]' -delete
